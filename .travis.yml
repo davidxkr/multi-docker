@@ -1,0 +1,21 @@
+sudo: required
+services:
+  - docker
+before_install:
+  - docker build -t davidmadrigal/react-test -f ./client/Dockerfile.dev ./client
+
+scripts:
+  - docker run -e CI=true davidmadrigal/react-test
+
+after_sucess:
+  - docker build -t davidmadrigal/multi-client ./client
+  - docker build -t davidmadrigal/multi-nginx ./nginx
+  - docker build -t davidmadrigal/multi-server ./server
+  - docker build -t davidmadrigal/multi-worker ./worker
+  # log in to the docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # Push the imagaes to docker hub
+  - docker push davidmadrigal/multi-client
+  - docker push davidmadrigal/multi-nginx
+  - docker push davidmadrigal/multi-server
+  - docker push davidmadrigal/multi-worker
